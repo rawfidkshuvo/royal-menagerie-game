@@ -32,6 +32,7 @@ import {
   ArrowRight,
   Home,
   Hammer,
+  Sparkles,
   Eye,
   Hand,
   MessageSquare,
