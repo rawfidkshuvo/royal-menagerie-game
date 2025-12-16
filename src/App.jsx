@@ -46,6 +46,7 @@ import {
   Snail,
   PawPrint, // Used for Dog
   Skull,
+  Trash2, // Added Trash2 icon
 } from "lucide-react";
 
 // --- Firebase Config & Init ---
@@ -55,13 +56,14 @@ const firebaseConfig = {
   projectId: "game-hub-ff8aa",
   storageBucket: "game-hub-ff8aa.firebasestorage.app",
   messagingSenderId: "586559578902",
-  appId: "1:586559578902:web:a9758ba9c41e4b5a6aa637"
+  appId: "1:586559578902:web:a9758ba9c41e4b5a6aa637",
 };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const APP_ID = typeof __app_id !== "undefined" ? __app_id : "royal-menagerie-game";
+const APP_ID =
+  typeof __app_id !== "undefined" ? __app_id : "royal-menagerie-game";
 const GAME_ID = "19";
 
 // --- Game Constants ---
@@ -81,7 +83,6 @@ const ANIMALS = {
     border: "border-orange-700",
   },
   DOG: {
-    // Changed from Panda to Dog
     name: "Dog",
     icon: PawPrint,
     color: "text-white",
@@ -350,6 +351,75 @@ const InfoModal = ({ title, text, onClose, type = "info", card = null }) => (
   </div>
 );
 
+// --- NEW COMPONENT: Interaction Modal for Spectators ---
+const InteractionModal = ({ turnState, players, currentUserId }) => {
+  if (!turnState) return null;
+
+  // Only show if the current user is NOT involved in the turn
+  if (
+    turnState.originId === currentUserId ||
+    turnState.holderId === currentUserId
+  )
+    return null;
+
+  const originPlayer = players.find((p) => p.id === turnState.originId);
+  const targetPlayer = players.find((p) => p.id === turnState.holderId);
+  const declaredAnimal = ANIMALS[turnState.declaredType];
+
+  if (!originPlayer || !targetPlayer || !declaredAnimal) return null;
+
+  return (
+    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[80] pointer-events-none animate-in fade-in zoom-in">
+      <div className="bg-gray-900/90 border-2 border-purple-500/50 backdrop-blur-md p-4 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.3)] flex flex-col items-center gap-3 w-64 md:w-80">
+        <div className="flex items-center gap-2 text-purple-300 text-xs font-bold uppercase tracking-widest">
+          <Eye size={14} className="animate-pulse" /> Live Interaction
+        </div>
+
+        <div className="flex items-center justify-between w-full">
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 rounded-full bg-gray-800 border border-gray-600 flex items-center justify-center mb-1">
+              <User size={20} className="text-gray-400" />
+            </div>
+            <span className="text-xs font-bold text-gray-300 max-w-[80px] truncate">
+              {originPlayer.name}
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center px-2">
+            <ArrowRight className="text-purple-500 animate-pulse" />
+            <span className="text-[10px] text-purple-400 font-bold mt-1">
+              OFFERS
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 rounded-full bg-gray-800 border border-gray-600 flex items-center justify-center mb-1">
+              <User size={20} className="text-gray-400" />
+            </div>
+            <span className="text-xs font-bold text-gray-300 max-w-[80px] truncate">
+              {targetPlayer.name}
+            </span>
+          </div>
+        </div>
+
+        <div className="w-full bg-gray-800/50 rounded-lg p-2 flex items-center justify-center gap-2 border border-gray-700">
+          <span className="text-gray-400 text-sm">Claim:</span>
+          <div
+            className={`flex items-center gap-1 font-bold ${declaredAnimal.color}`}
+          >
+            <declaredAnimal.icon size={16} />
+            <span>{declaredAnimal.name}</span>
+          </div>
+        </div>
+
+        <div className="text-[10px] text-gray-500 italic text-center w-full">
+          Waiting for {targetPlayer.name} to decide...
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const CardDisplay = ({
   type,
   onClick,
@@ -513,7 +583,7 @@ export default function RoyalMenagerie() {
           if (!data.players.some((p) => p.id === user.uid)) {
             setRoomId("");
             setView("menu");
-            setError("You have left the court.");
+            setError("You have been removed from the court.");
             return;
           }
           setGameState(data);
@@ -645,6 +715,26 @@ export default function RoyalMenagerie() {
     setShowLeaveConfirm(false);
   };
 
+  const kickPlayer = async (pid) => {
+    if (!gameState || gameState.hostId !== user.uid) return;
+    const players = gameState.players.filter((p) => p.id !== pid);
+    await updateDoc(
+      doc(db, "artifacts", APP_ID, "public", "data", "rooms", roomId),
+      { players }
+    );
+  };
+
+  const toggleReady = async () => {
+    if (!gameState || !user) return;
+    const updatedPlayers = gameState.players.map((p) =>
+      p.id === user.uid ? { ...p, ready: !p.ready } : p
+    );
+    await updateDoc(
+      doc(db, "artifacts", APP_ID, "public", "data", "rooms", roomId),
+      { players: updatedPlayers }
+    );
+  };
+
   const resetToLobby = async () => {
     if (!gameState || gameState.hostId !== user.uid) return;
     const players = gameState.players.map((p) => ({
@@ -664,6 +754,7 @@ export default function RoyalMenagerie() {
         winnerId: null,
       }
     );
+    setShowLeaveConfirm(false);
   };
 
   const restartGame = async () => {
@@ -679,6 +770,7 @@ export default function RoyalMenagerie() {
       hand: [],
       faceUpCards: [],
       eliminated: false,
+      ready: false, // Reset ready status
     }));
     const pCount = players.length;
 
@@ -741,6 +833,10 @@ export default function RoyalMenagerie() {
       passedTrace: [user.uid],
     };
 
+    // FIX: Added optional chaining and fallback for player name
+    const targetName =
+      gameState.players.find((p) => p.id === targetPlayerId)?.name || "Unknown";
+
     await updateDoc(
       doc(db, "artifacts", APP_ID, "public", "data", "rooms", roomId),
       {
@@ -748,9 +844,7 @@ export default function RoyalMenagerie() {
         turnState: newTurnState,
         logs: arrayUnion({
           id: Date.now().toString(),
-          text: `${myPlayer.name} passed a card to ${
-            gameState.players.find((p) => p.id === targetPlayerId).name
-          } claiming it is a ${ANIMALS[declaredAnimal].name}.`,
+          text: `${myPlayer.name} passed a card to ${targetName} claiming it is a ${ANIMALS[declaredAnimal].name}.`,
           type: "neutral",
         }),
       }
@@ -775,10 +869,17 @@ export default function RoyalMenagerie() {
     const players = [...gameState.players];
     const loserIdx = players.findIndex((p) => p.id === loserId);
 
+    // FIX: Safety check
+    if (loserIdx === -1) return;
+
     players[loserIdx].faceUpCards.push(actual);
 
-    const loserName = players[loserIdx].name;
-    const winnerName = players.find((p) => p.id === winnerId).name;
+    const loser = players[loserIdx];
+    const loserName = loser.name;
+
+    // FIX: Added optional chaining for winner name lookup
+    const winnerName =
+      players.find((p) => p.id === winnerId)?.name || "Unknown";
 
     let logText = guessCorrect
       ? `${winnerName} correctly guessed! ${loserName} takes the ${ANIMALS[actual].name}.`
@@ -800,7 +901,6 @@ export default function RoyalMenagerie() {
       );
     else triggerFeedback("neutral", "RESULT", logText, Info);
 
-    const loser = players[loserIdx];
     const counts = {};
     loser.faceUpCards.forEach((c) => (counts[c] = (counts[c] || 0) + 1));
 
@@ -858,15 +958,17 @@ export default function RoyalMenagerie() {
       passedTrace: newTrace,
     };
 
+    // FIX: Added optional chaining
+    const userName =
+      gameState.players.find((p) => p.id === user.uid)?.name || "Unknown";
+
     await updateDoc(
       doc(db, "artifacts", APP_ID, "public", "data", "rooms", roomId),
       {
         turnState: newTurnState,
         logs: arrayUnion({
           id: Date.now().toString(),
-          text: `${
-            gameState.players.find((p) => p.id === user.uid).name
-          } looked and passed the card.`,
+          text: `${userName} looked and passed the card.`,
           type: "neutral",
         }),
       }
@@ -893,7 +995,8 @@ export default function RoyalMenagerie() {
           />
           <h1 className="text-3xl font-bold mb-2">Under Maintenance</h1>
           <p className="text-gray-400">
-            The Queen is feeding the royal animals. The animals will return after some rest.
+            The Queen is feeding the royal animals. The animals will return
+            after some rest.
           </p>
         </div>
         {/* Add Spacing Between Boxes */}
@@ -1027,6 +1130,15 @@ export default function RoyalMenagerie() {
                   )}
                   {p.name}
                 </span>
+                {isHost && p.id !== user.uid && (
+                  <button
+                    onClick={() => kickPlayer(p.id)}
+                    className="text-gray-500 hover:text-red-500 transition-colors p-1"
+                    title="Kick Player"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
               </div>
             ))}
             {gameState.players.length < 2 && (
@@ -1074,6 +1186,11 @@ export default function RoyalMenagerie() {
       gameState.turnState.holderId === user.uid;
     const loserId = gameState.winnerId;
 
+    // Check if all GUESTS are ready
+    const allGuestsReady = gameState.players
+      .filter((p) => p.id !== gameState.hostId)
+      .every((p) => p.ready);
+
     return (
       <div className="min-h-screen bg-gray-950 text-white flex flex-col relative overflow-hidden font-sans">
         <FloatingBackground />
@@ -1085,6 +1202,15 @@ export default function RoyalMenagerie() {
           <LogViewer logs={gameState.logs} onClose={() => setShowLogs(false)} />
         )}
         {showGuide && <GameGuideModal onClose={() => setShowGuide(false)} />}
+
+        {/* NEW: Interaction Modal for Spectators */}
+        {gameState.status === "playing" && (
+          <InteractionModal
+            turnState={gameState.turnState}
+            players={gameState.players}
+            currentUserId={user.uid}
+          />
+        )}
 
         {showLeaveConfirm && (
           <LeaveConfirmModal
@@ -1140,26 +1266,66 @@ export default function RoyalMenagerie() {
               is the Royal Fool!
             </div>
 
-            {isHost ? (
-              <div className="flex flex-col items-center gap-4 w-full max-w-xs">
-                <button
-                  onClick={restartGame}
-                  className="w-full py-3 rounded-xl font-bold text-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center gap-2"
+            {/* Ready Status for Players */}
+            <div className="flex flex-wrap justify-center gap-2 mb-8 max-w-md">
+              {gameState.players.map((p) => (
+                <div
+                  key={p.id}
+                  className={`px-3 py-1 rounded-full text-sm border ${
+                    p.ready
+                      ? "border-green-500 bg-green-900/20 text-green-300"
+                      : "border-gray-600 bg-gray-800 text-gray-400"
+                  }`}
                 >
-                  <RotateCcw size={20} /> Restart Court
-                </button>
+                  {p.name} {p.ready && "✓"}
+                </div>
+              ))}
+            </div>
+
+            <div className="w-full max-w-xs space-y-3">
+              {isHost ? (
+                <>
+                  <button
+                    onClick={restartGame}
+                    disabled={!allGuestsReady}
+                    className={`w-full py-3 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
+                      allGuestsReady
+                        ? "bg-blue-600 hover:bg-blue-500 text-white shadow-lg hover:scale-105"
+                        : "bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700"
+                    }`}
+                  >
+                    <RotateCcw size={20} /> Restart Court
+                  </button>
+                  <button
+                    onClick={resetToLobby}
+                    disabled={!allGuestsReady}
+                    className={`w-full py-3 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
+                      allGuestsReady
+                        ? "border-2 border-green-600 text-green-500 hover:bg-green-600/10"
+                        : "border-2 border-gray-700 text-gray-600 cursor-not-allowed"
+                    }`}
+                  >
+                    <Home size={20} /> Return to Lobby
+                  </button>
+                  {!allGuestsReady && (
+                    <p className="text-gray-500 text-sm animate-pulse">
+                      Waiting for diplomats to be ready...
+                    </p>
+                  )}
+                </>
+              ) : !myPlayer.ready ? (
                 <button
-                  onClick={resetToLobby}
-                  className="w-full py-3 rounded-xl font-bold text-lg border-2 border-green-600 text-green-500 hover:bg-green-600/10 flex items-center justify-center gap-2"
+                  onClick={toggleReady}
+                  className="w-full py-3 rounded-xl font-bold text-lg bg-green-600 hover:bg-green-500 text-white shadow-lg animate-pulse hover:scale-105 transition-all"
                 >
-                  <Home size={20} /> Return to Lobby
+                  Ready for Next Game
                 </button>
-              </div>
-            ) : (
-              <div className="text-gray-400 animate-pulse">
-                Waiting for Host...
-              </div>
-            )}
+              ) : (
+                <div className="w-full py-3 bg-gray-800 rounded-xl font-bold text-green-400 border border-green-500/50 flex items-center justify-center gap-2">
+                  <CheckCircle size={20} /> Waiting for Host...
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -1241,7 +1407,9 @@ export default function RoyalMenagerie() {
                   Your Turn! Select a card from hand.
                 </span>
               ) : (
-                `Waiting for ${gameState.players[gameState.turnIndex].name}...`
+                `Waiting for ${
+                  gameState.players[gameState.turnIndex]?.name || "Player"
+                }...`
               )
             ) : isReceiving ? (
               <span className="text-yellow-400 animate-pulse">
@@ -1251,7 +1419,7 @@ export default function RoyalMenagerie() {
               `${
                 gameState.players.find(
                   (p) => p.id === gameState.turnState.holderId
-                ).name
+                )?.name || "Opponent"
               } is deciding...`
             )}
           </div>
@@ -1268,19 +1436,13 @@ export default function RoyalMenagerie() {
                 </div>
                 <div className="flex gap-4 w-full">
                   <button
-                    onClick={() => setShowPeekModal(false)}
-                    className="flex-1 py-3 bg-gray-700 rounded-lg text-white font-bold"
-                  >
-                    Back
-                  </button>
-                  <button
                     onClick={() => {
                       setShowPeekModal(false);
                       setForwardingPhase(true);
                     }}
                     className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold"
                   >
-                    I'm Ready to Lie
+                    Ready to pass
                   </button>
                 </div>
               </div>
@@ -1310,7 +1472,7 @@ export default function RoyalMenagerie() {
                           {
                             gameState.players.find(
                               (p) => p.id === targetPlayerId
-                            ).name
+                            )?.name
                           }
                         </div>
                       ) : (
@@ -1393,7 +1555,7 @@ export default function RoyalMenagerie() {
                           {
                             gameState.players.find(
                               (p) => p.id === targetPlayerId
-                            ).name
+                            )?.name
                           }
                         </div>
                       ) : (
@@ -1451,11 +1613,9 @@ export default function RoyalMenagerie() {
             {isReceiving && !showPeekModal && !forwardingPhase && (
               <div className="mb-4 p-6 bg-gray-800 rounded-xl border-2 border-yellow-500/50 animate-in zoom-in">
                 <h3 className="text-xl md:text-2xl font-black text-center text-white mb-2">
-                  {
-                    gameState.players.find(
-                      (p) => p.id === gameState.turnState.originId
-                    ).name
-                  }{" "}
+                  {gameState.players.find(
+                    (p) => p.id === gameState.turnState.originId
+                  )?.name || "Opponent"}{" "}
                   offers a card...
                 </h3>
                 <p className="text-center text-gray-300 mb-6 text-lg">
@@ -1506,8 +1666,12 @@ export default function RoyalMenagerie() {
                   <span className="font-bold text-gray-300">My Hand</span>
                 </div>
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                  {/* FIX: Improved Key for stability */}
                   {myPlayer.hand.map((card, i) => (
-                    <div key={i} className="relative group shrink-0">
+                    <div
+                      key={`${card}-${i}`}
+                      className="relative group shrink-0"
+                    >
                       {selectedCard === card &&
                         isMyTurn &&
                         !gameState.turnState && (
