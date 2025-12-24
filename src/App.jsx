@@ -312,7 +312,7 @@ const FloatingBackground = () => (
 
 const Logo = () => (
   <div className="flex items-center justify-center gap-1 opacity-40 mt-auto pb-2 pt-2 relative z-10">
-    <Cat size={12} className="text-purple-500" />
+    <PawPrint size={12} className="text-purple-500" />
     <span className="text-[10px] font-black tracking-widest text-purple-500 uppercase">
       ROYAL MENAGERIE
     </span>
@@ -529,7 +529,10 @@ export default function RoyalMenagerie() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState("menu");
   const [playerName, setPlayerName] = useState("");
-  const [roomId, setRoomId] = useState("");
+  // Initialize roomId from localStorage if available
+  const [roomId, setRoomId] = useState(
+    () => localStorage.getItem("royal_menagerie_roomId") || ""
+  );
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [gameState, setGameState] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -581,6 +584,8 @@ export default function RoyalMenagerie() {
         if (snap.exists()) {
           const data = snap.data();
           if (!data.players.some((p) => p.id === user.uid)) {
+            // User was removed from the game (or game data corruption)
+            localStorage.removeItem("royal_menagerie_roomId");
             setRoomId("");
             setView("menu");
             setError("You have been removed from the court.");
@@ -590,6 +595,8 @@ export default function RoyalMenagerie() {
           if (data.status === "lobby") setView("lobby");
           else setView("game");
         } else {
+          // Room does not exist anymore
+          localStorage.removeItem("royal_menagerie_roomId");
           setRoomId("");
           setView("menu");
           setError("The court has been dissolved.");
@@ -631,7 +638,11 @@ export default function RoyalMenagerie() {
       doc(db, "artifacts", APP_ID, "public", "data", "rooms", newId),
       initialData
     );
+    
+    // Save to local storage so refresh doesn't kill session
+    localStorage.setItem("royal_menagerie_roomId", newId);
     setRoomId(newId);
+    
     setView("lobby");
     setLoading(false);
   };
@@ -658,11 +669,15 @@ export default function RoyalMenagerie() {
 
     const data = snap.data();
     if (data.status !== "lobby") {
-      setError("Game in progress");
-      setLoading(false);
-      return;
+      // Allow re-joining if player is already in the list (reconnection handling logic handled by main useEffect, but safety check here)
+      if (!data.players.find((p) => p.id === user.uid)) {
+        setError("Game in progress");
+        setLoading(false);
+        return;
+      }
     }
-    if (data.players.length >= 7) {
+    
+    if (data.players.length >= 7 && !data.players.find((p) => p.id === user.uid)) {
       setError("Room full");
       setLoading(false);
       return;
@@ -682,7 +697,11 @@ export default function RoyalMenagerie() {
       ];
       await updateDoc(ref, { players: newPlayers });
     }
+    
+    // Save to local storage so refresh doesn't kill session
+    localStorage.setItem("royal_menagerie_roomId", roomCodeInput);
     setRoomId(roomCodeInput);
+    
     setLoading(false);
   };
 
@@ -709,7 +728,11 @@ export default function RoyalMenagerie() {
         await updateDoc(roomRef, { players: newPlayers });
       }
     }
+    
+    // Clear local storage on explicit leave
+    localStorage.removeItem("royal_menagerie_roomId");
     setRoomId("");
+    
     setView("menu");
     setGameState(null);
     setShowLeaveConfirm(false);
