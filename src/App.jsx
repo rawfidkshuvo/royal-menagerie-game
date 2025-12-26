@@ -1055,7 +1055,7 @@ export default function RoyalMenagerie() {
           <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-purple-400 to-pink-600 font-serif tracking-widest drop-shadow-md">
             ROYAL MENAGERIE
           </h1>
-          <p className="text-purple-200/60 tracking-[0.3em] uppercase mt-2">
+          <p className="text-white-400/60 tracking-[0.3em] uppercase mt-2">
             The Court of Deception
           </p>
         </div>
@@ -1102,6 +1102,20 @@ export default function RoyalMenagerie() {
           >
             <BookOpen size={16} /> How to Play
           </button>
+        </div>
+        <div className="absolute bottom-4 text-slate-600 text-xs text-center">
+          Inspired by Cockroach Poker. A tribute game.
+          <br />
+          Developed by <strong>RAWFID K SHUVO</strong>. Visit{" "}
+          <a
+            href="https://rawfidkshuvo.github.io/gamehub/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-pink-500 underline hover:text-pink-600"
+          >
+            GAMEHUB
+          </a>{" "}
+          for more games.
         </div>
       </div>
     );
