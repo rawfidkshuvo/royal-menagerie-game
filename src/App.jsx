@@ -638,11 +638,11 @@ export default function RoyalMenagerie() {
       doc(db, "artifacts", APP_ID, "public", "data", "rooms", newId),
       initialData
     );
-    
+
     // Save to local storage so refresh doesn't kill session
     localStorage.setItem("royal_menagerie_roomId", newId);
     setRoomId(newId);
-    
+
     setView("lobby");
     setLoading(false);
   };
@@ -676,8 +676,11 @@ export default function RoyalMenagerie() {
         return;
       }
     }
-    
-    if (data.players.length >= 7 && !data.players.find((p) => p.id === user.uid)) {
+
+    if (
+      data.players.length >= 7 &&
+      !data.players.find((p) => p.id === user.uid)
+    ) {
       setError("Room full");
       setLoading(false);
       return;
@@ -697,11 +700,11 @@ export default function RoyalMenagerie() {
       ];
       await updateDoc(ref, { players: newPlayers });
     }
-    
+
     // Save to local storage so refresh doesn't kill session
     localStorage.setItem("royal_menagerie_roomId", roomCodeInput);
     setRoomId(roomCodeInput);
-    
+
     setLoading(false);
   };
 
@@ -728,11 +731,11 @@ export default function RoyalMenagerie() {
         await updateDoc(roomRef, { players: newPlayers });
       }
     }
-    
+
     // Clear local storage on explicit leave
     localStorage.removeItem("royal_menagerie_roomId");
     setRoomId("");
-    
+
     setView("menu");
     setGameState(null);
     setShowLeaveConfirm(false);
@@ -1387,22 +1390,22 @@ export default function RoyalMenagerie() {
                   key={p.id}
                   onClick={() => (canSelect ? setTargetPlayerId(p.id) : null)}
                   className={`relative bg-gray-900/90 p-2 rounded-lg border-2 w-28 md:w-36 flex flex-col items-center transition-all
-                                      ${
-                                        isActive
-                                          ? "border-yellow-500 shadow-lg shadow-yellow-500/20"
-                                          : "border-gray-700"
-                                      }
-                                      ${
-                                        canSelect
-                                          ? "cursor-pointer ring-2 ring-green-500 hover:scale-105"
-                                          : ""
-                                      }
-                                      ${
-                                        targetPlayerId === p.id
-                                          ? "bg-green-900/30 ring-4 ring-green-400"
-                                          : ""
-                                      }
-                                   `}
+                                              ${
+                                                isActive
+                                                  ? "border-yellow-500 shadow-lg shadow-yellow-500/20"
+                                                  : "border-gray-700"
+                                              }
+                                              ${
+                                                canSelect
+                                                  ? "cursor-pointer ring-2 ring-green-500 hover:scale-105"
+                                                  : ""
+                                              }
+                                              ${
+                                                targetPlayerId === p.id
+                                                  ? "bg-green-900/30 ring-4 ring-green-400"
+                                                  : ""
+                                              }
+                                             `}
                 >
                   <div className="flex items-center justify-between w-full mb-2">
                     <span className="text-xs font-bold truncate text-gray-300">
@@ -1486,11 +1489,10 @@ export default function RoyalMenagerie() {
             </div>
           )}
 
-          {/* Action Area (Bottom Sheet) */}
-          <div className="w-full max-w-4xl bg-gray-900/95 p-4 rounded-t-3xl border-t border-purple-900/50 backdrop-blur-md">
-            {/* 1. Initiate Turn (Original Card Pass) */}
-            {isMyTurn && selectedCard && !gameState.turnState && (
-              <div className="mb-4 p-4 bg-gray-800 rounded-xl border border-gray-700 animate-in slide-in-from-bottom">
+          {/* 1. Initiate Turn (Centered Modal, Click-Through enabled) */}
+          {isMyTurn && selectedCard && !gameState.turnState && (
+            <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none p-4">
+              <div className="w-full max-w-lg bg-gray-900 rounded-2xl border border-gray-700 shadow-2xl p-6 animate-in zoom-in pointer-events-auto">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className="text-center">
@@ -1530,12 +1532,13 @@ export default function RoyalMenagerie() {
                           key={k}
                           onClick={() => setDeclaredAnimal(k)}
                           className={`p-2 rounded text-[10px] md:text-xs font-bold flex flex-col items-center gap-1 border transition-all
-                                                    ${
-                                                      declaredAnimal === k
-                                                        ? "bg-purple-600 border-purple-400 text-white scale-105 shadow-lg"
-                                                        : "bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700"
-                                                    }
-                                                 `}
+                                                                ${
+                                                                  declaredAnimal ===
+                                                                  k
+                                                                    ? "bg-purple-600 border-purple-400 text-white scale-105 shadow-lg"
+                                                                    : "bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700"
+                                                                }
+                                                               `}
                         >
                           {React.createElement(ANIMALS[k].icon, { size: 14 })}
                           {ANIMALS[k].name}
@@ -1543,33 +1546,35 @@ export default function RoyalMenagerie() {
                       ))}
                     </div>
                   </div>
+                </div>
 
-                  <div className="flex flex-col gap-2 w-full md:w-auto">
-                    <button
-                      onClick={initiatePass}
-                      disabled={!targetPlayerId || !declaredAnimal}
-                      className="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg w-full"
-                    >
-                      Pass Card
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedCard(null);
-                        setTargetPlayerId(null);
-                        setDeclaredAnimal(null);
-                      }}
-                      className="bg-red-900/50 hover:bg-red-900 text-red-300 py-2 rounded-lg w-full text-sm"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                <div className="flex flex-col gap-2 w-full mt-4">
+                  <button
+                    onClick={initiatePass}
+                    disabled={!targetPlayerId || !declaredAnimal}
+                    className="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg w-full"
+                  >
+                    Pass Card
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedCard(null);
+                      setTargetPlayerId(null);
+                      setDeclaredAnimal(null);
+                    }}
+                    className="bg-red-900/50 hover:bg-red-900 text-red-300 py-2 rounded-lg w-full text-sm"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* 2. Forwarding Phase (Same UI as Initiate, but showing the active card) */}
-            {forwardingPhase && (
-              <div className="mb-4 p-4 bg-gray-800 rounded-xl border border-gray-700 animate-in slide-in-from-bottom">
+          {/* 2. Forwarding Phase (Centered Modal, Click-Through enabled) */}
+          {forwardingPhase && (
+            <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none p-4">
+              <div className="w-full max-w-lg bg-gray-900 rounded-2xl border border-gray-700 shadow-2xl p-6 animate-in zoom-in pointer-events-auto">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className="text-center">
@@ -1613,12 +1618,13 @@ export default function RoyalMenagerie() {
                           key={k}
                           onClick={() => setDeclaredAnimal(k)}
                           className={`p-2 rounded text-[10px] md:text-xs font-bold flex flex-col items-center gap-1 border transition-all
-                                                    ${
-                                                      declaredAnimal === k
-                                                        ? "bg-purple-600 border-purple-400 text-white scale-105 shadow-lg"
-                                                        : "bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700"
-                                                    }
-                                                 `}
+                                                                ${
+                                                                  declaredAnimal ===
+                                                                  k
+                                                                    ? "bg-purple-600 border-purple-400 text-white scale-105 shadow-lg"
+                                                                    : "bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700"
+                                                                }
+                                                               `}
                         >
                           {React.createElement(ANIMALS[k].icon, { size: 14 })}
                           {ANIMALS[k].name}
@@ -1626,29 +1632,31 @@ export default function RoyalMenagerie() {
                       ))}
                     </div>
                   </div>
+                </div>
 
-                  <div className="flex flex-col gap-2 w-full md:w-auto">
-                    <button
-                      onClick={handleForward}
-                      disabled={!targetPlayerId || !declaredAnimal}
-                      className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg w-full"
-                    >
-                      Pass It On
-                    </button>
-                    <button
-                      onClick={() => setForwardingPhase(false)}
-                      className="text-xs text-gray-500 hover:text-white mt-1"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                <div className="flex flex-col gap-2 w-full mt-4">
+                  <button
+                    onClick={handleForward}
+                    disabled={!targetPlayerId || !declaredAnimal}
+                    className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg w-full"
+                  >
+                    Pass It On
+                  </button>
+                  <button
+                    onClick={() => setForwardingPhase(false)}
+                    className="text-xs text-gray-500 hover:text-white mt-1"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* 3. Receive Card (Decide) */}
-            {isReceiving && !showPeekModal && !forwardingPhase && (
-              <div className="mb-4 p-6 bg-gray-800 rounded-xl border-2 border-yellow-500/50 animate-in zoom-in">
+          {/* 3. Receive Card (Centered Modal, Click-Through enabled) */}
+          {isReceiving && !showPeekModal && !forwardingPhase && (
+            <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none p-4">
+              <div className="w-full max-w-lg bg-gray-900 rounded-2xl border-2 border-yellow-500/50 shadow-2xl p-6 animate-in zoom-in pointer-events-auto">
                 <h3 className="text-xl md:text-2xl font-black text-center text-white mb-2">
                   {gameState.players.find(
                     (p) => p.id === gameState.turnState.originId
@@ -1693,10 +1701,12 @@ export default function RoyalMenagerie() {
                   )}
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* 4. My Hand */}
-            {!isReceiving && !forwardingPhase && myPlayer && (
+          {/* Action Area (Bottom Sheet) - Now just the Hand */}
+          <div className="w-full max-w-4xl bg-gray-900/95 p-4 rounded-t-3xl border-t border-purple-900/50 backdrop-blur-md">
+            {myPlayer && (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2 mb-2">
                   <User className="text-purple-400" size={16} />
