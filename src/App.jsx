@@ -496,7 +496,7 @@ const CardDisplay = ({
 };
 
 const LogViewer = ({ logs, onClose }) => (
-  <div className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-0 md:p-4">
+  <div className="fixed top-16 right-4 w-64 max-h-60 bg-gray-900/95 border border-gray-700 rounded-xl z-[155] overflow-y-auto p-2 shadow-2xl">
     <div className="bg-gray-800 w-full md:max-w-md h-full md:h-[70vh] flex flex-col border border-gray-700 md:rounded-xl">
       <div className="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800">
         <h3 className="text-white font-bold text-lg">Court Records</h3>
@@ -1266,7 +1266,7 @@ export default function RoyalMenagerie() {
         )}
 
         {/* Top Bar */}
-        <div className="h-14 bg-gray-900/80 border-b border-gray-800 flex items-center justify-between px-4 z-50 backdrop-blur-md sticky top-0">
+        <div className="h-14 bg-gray-900/80 border-b border-gray-800 flex items-center justify-between px-4 z-[160] backdrop-blur-md sticky top-0">
           <span className="font-serif text-purple-500 font-bold tracking-wider">
             ROYAL MENAGERIE
           </span>
@@ -1294,7 +1294,7 @@ export default function RoyalMenagerie() {
 
         {/* GAME OVER SCREEN */}
         {gameState.status === "finished" && (
-          <div className="fixed inset-0 bg-black/95 z-[100] flex flex-col items-center justify-center p-4 text-center animate-in fade-in">
+          <div className="fixed inset-0 top-14 bg-black/95 z-[150] flex flex-col items-center justify-center p-4 text-center animate-in fade-in">
             <Skull size={64} className="text-red-500 mb-6 animate-bounce" />
             <h1 className="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-widest">
               Game Over
