@@ -1278,8 +1278,12 @@ export default function RoyalMenagerie() {
               <BookOpen size={18} />
             </button>
             <button
-              onClick={() => setShowLogs(true)}
-              className="p-2 hover:bg-gray-800 rounded text-gray-400"
+              onClick={() => setShowLogs(!showLogs)}
+              className={`p-2 rounded-full ${
+                showLogs
+                  ? "bg-purple-900 text-purple-400"
+                  : "text-gray-400 hover:bg-gray-800"
+              }`}
             >
               <History size={18} />
             </button>
