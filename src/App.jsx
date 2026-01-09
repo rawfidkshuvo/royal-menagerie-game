@@ -319,6 +319,15 @@ const Logo = () => (
   </div>
 );
 
+const LogoBig = () => (
+  <div className="flex items-center justify-center gap-1 opacity-40 mt-auto pb-2 pt-2 relative z-10">
+    <PawPrint size={20} className="text-purple-500" />
+    <span className="text-[20px] font-black tracking-widest text-purple-500 uppercase">
+      ROYAL MENAGERIE
+    </span>
+  </div>
+);
+
 const InfoModal = ({ title, text, onClose, type = "info", card = null }) => (
   <div className="fixed inset-0 bg-black/90 z-[150] flex items-center justify-center p-4 animate-in fade-in">
     <div className="bg-gray-800 border-2 border-purple-600 rounded-xl p-6 w-full max-w-sm shadow-2xl relative">
@@ -1103,7 +1112,7 @@ export default function RoyalMenagerie() {
             onClick={() => setShowGuide(true)}
             className="w-full text-sm text-gray-400 hover:text-white flex items-center justify-center gap-2 py-2"
           >
-            <BookOpen size={16} /> How to Play
+            <BookOpen size={16} /> Royal Guide
           </button>
         </div>
         <div className="absolute bottom-4 text-slate-600 text-xs text-center">
@@ -1129,6 +1138,7 @@ export default function RoyalMenagerie() {
     return (
       <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-6 relative">
         <FloatingBackground />
+        <LogoBig />
         {showLeaveConfirm && (
           <LeaveConfirmModal
             onCancel={() => setShowLeaveConfirm(false)}
@@ -1144,7 +1154,7 @@ export default function RoyalMenagerie() {
         <div className="z-10 w-full max-w-lg bg-gray-900/90 backdrop-blur p-8 rounded-2xl border border-purple-900/50 shadow-2xl mb-4">
           <div className="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
             <h2 className="text-2xl font-serif text-purple-400">
-              Court: <span className="text-white font-mono">{roomId}</span>
+              Court Room: <span className="text-white font-mono">{roomId}</span>
             </h2>
             <button
               onClick={() => setShowLeaveConfirm(true)}
