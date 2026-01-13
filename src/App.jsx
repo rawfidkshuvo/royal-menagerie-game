@@ -1229,7 +1229,7 @@ export default function RoyalMenagerie() {
     const isMyTurn =
       gameState.status === "playing" &&
       !gameState.turnState &&
-      gameState.players[gameState.turnIndex].id === user.uid;
+      gameState.players[gameState.turnIndex]?.id === user.uid;
     const isReceiving =
       gameState.status === "playing" &&
       gameState.turnState &&
@@ -1390,7 +1390,8 @@ export default function RoyalMenagerie() {
               if (p.id === user.uid) return null;
               const isActive = gameState.turnState
                 ? gameState.turnState.holderId === p.id
-                : gameState.turnIndex === i;
+                : (gameState.players[gameState.turnIndex] && gameState.turnIndex === i); 
+                // ^^^ Added check to ensure turnIndex points to a valid player
               const isTargetable =
                 (isMyTurn && selectedCard) || forwardingPhase;
               const validTargets = getValidTargets(
