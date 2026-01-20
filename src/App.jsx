@@ -1757,13 +1757,15 @@ export default function RoyalMenagerie() {
                 </div>
 
                 {/* My Face Up Cards */}
-                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-800">
-                  <span className="text-xs text-red-400 font-bold uppercase">
+                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-800 w-full overflow-hidden">
+                  <span className="text-xs text-red-400 font-bold uppercase shrink-0">
                     My Failures ({myPlayer.faceUpCards.length})
                   </span>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 overflow-x-auto flex-1 pb-1 scrollbar-hide">
                     {myPlayer.faceUpCards.map((c, i) => (
-                      <CardDisplay key={i} type={c} tiny />
+                      <div key={i} className="shrink-0">
+                        <CardDisplay type={c} tiny />
+                      </div>
                     ))}
                   </div>
                 </div>
