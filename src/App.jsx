@@ -537,7 +537,9 @@ const LogViewer = ({ logs, onClose }) => (
 export default function RoyalMenagerie() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState("menu");
-  const [playerName, setPlayerName] = useState("");
+  const [playerName, setPlayerName] = useState(
+    () => localStorage.getItem("royalmenagerie_playerName") || ""
+  );
   // Initialize roomId from localStorage if available
   const [roomId, setRoomId] = useState(
     () => localStorage.getItem("royal_menagerie_roomId") || ""
@@ -575,6 +577,10 @@ export default function RoyalMenagerie() {
     initAuth();
     onAuthStateChanged(auth, setUser);
   }, []);
+
+  useEffect(() => {
+    if (playerName) localStorage.setItem("royalmenagerie_playerName", playerName);
+  }, [playerName]);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "game_hub_settings", "config"), (doc) => {
