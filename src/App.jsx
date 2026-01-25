@@ -144,11 +144,11 @@ const shuffle = (array) => {
 // --- Components ---
 
 const GameGuideModal = ({ onClose }) => (
-  <div className="fixed inset-0 bg-black/95 z-[200] flex items-center justify-center p-0 md:p-4 animate-in fade-in">
+  <div className="fixed inset-0 bg-black/95 z-200 flex items-center justify-center p-0 md:p-4 animate-in fade-in">
     <div className="bg-gray-900 md:rounded-2xl w-full max-w-5xl h-full md:h-auto md:max-h-[90vh] overflow-hidden border-none md:border border-gray-700 shadow-2xl flex flex-col">
       <div className="p-4 md:p-6 border-b border-gray-700 flex justify-between items-center bg-gray-800">
         <div className="flex flex-col">
-          <h2 className="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 uppercase tracking-widest">
+          <h2 className="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-pink-500 uppercase tracking-widest">
             ROYAL GUIDE
           </h2>
           <span className="text-gray-400 text-xs md:text-sm font-medium tracking-wide">
@@ -164,7 +164,7 @@ const GameGuideModal = ({ onClose }) => (
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 text-gray-300">
-        <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 p-4 md:p-6 rounded-2xl border border-purple-700/30">
+        <div className="bg-linear-to-r from-purple-900/30 to-pink-900/30 p-4 md:p-6 rounded-2xl border border-purple-700/30">
           <h3 className="text-xl md:text-2xl font-bold text-white mb-3 flex items-center gap-3">
             <Trophy className="text-yellow-400" size={24} /> The Objective
           </h3>
@@ -232,7 +232,7 @@ const LeaveConfirmModal = ({
   isHost,
   inGame,
 }) => (
-  <div className="fixed inset-0 bg-black/90 z-[200] flex items-center justify-center p-4 animate-in fade-in">
+  <div className="fixed inset-0 bg-black/90 z-200 flex items-center justify-center p-4 animate-in fade-in">
     <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 max-w-sm w-full text-center shadow-2xl">
       <h3 className="text-xl font-bold text-white mb-2">Abandon the Court?</h3>
       <p className="text-gray-400 mb-6 text-sm">
@@ -268,7 +268,7 @@ const LeaveConfirmModal = ({
 );
 
 const FeedbackOverlay = ({ type, message, subtext, icon: Icon }) => (
-  <div className="fixed inset-0 z-[160] flex items-center justify-center pointer-events-none">
+  <div className="fixed inset-0 z-160 flex items-center justify-center pointer-events-none">
     <div
       className={`
       flex flex-col items-center justify-center p-8 md:p-12 rounded-3xl border-4 shadow-[0_0_50px_rgba(0,0,0,0.8)] 
@@ -309,7 +309,7 @@ const FloatingBackground = ({ isShaking }) => (
       isShaking ? "animate-shake bg-red-900/20" : ""
     }`}
   >
-    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-900/20 via-gray-950 to-black" />
+    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-yellow-900/20 via-gray-950 to-black" />
     <div className="absolute top-0 left-0 w-full h-full opacity-10">
       {[...Array(20)].map((_, i) => {
         const fruitKeys = Object.keys(ANIMALS);
@@ -317,7 +317,7 @@ const FloatingBackground = ({ isShaking }) => (
         return (
           <div
             key={i}
-            className="absolute animate-float text-white/20"
+            className="absolute animate-float text-white/60"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -366,7 +366,7 @@ const LogoBig = () => (
 );
 
 const InfoModal = ({ title, text, onClose, type = "info", card = null }) => (
-  <div className="fixed inset-0 bg-black/90 z-[150] flex items-center justify-center p-4 animate-in fade-in">
+  <div className="fixed inset-0 bg-black/90 z-150 flex items-center justify-center p-4 animate-in fade-in">
     <div className="bg-gray-800 border-2 border-purple-600 rounded-xl p-6 w-full max-w-sm shadow-2xl relative">
       <div className="flex flex-col items-center text-center gap-4">
         {type === "error" ? (
@@ -415,7 +415,7 @@ const InteractionModal = ({ turnState, players, currentUserId }) => {
   if (!originPlayer || !targetPlayer || !declaredAnimal) return null;
 
   return (
-    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[80] pointer-events-none animate-in fade-in zoom-in">
+    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-80 pointer-events-none animate-in fade-in zoom-in">
       <div className="bg-gray-900/90 border-2 border-purple-500/50 backdrop-blur-md p-4 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.3)] flex flex-col items-center gap-3 w-64 md:w-80">
         <div className="flex items-center gap-2 text-purple-300 text-xs font-bold uppercase tracking-widest">
           <Eye size={14} className="animate-pulse" /> Live Interaction
@@ -542,7 +542,7 @@ const CardDisplay = ({
 };
 
 const LogViewer = ({ logs, onClose }) => (
-  <div className="fixed top-16 right-4 w-64 max-h-60 bg-gray-900/95 border border-gray-700 rounded-xl z-[155] overflow-y-auto p-2 shadow-2xl">
+  <div className="fixed top-16 right-4 w-64 max-h-60 bg-gray-900/95 border border-gray-700 rounded-xl z-155 overflow-y-auto p-2 shadow-2xl">
     <div className="bg-gray-800 w-full md:max-w-md h-full md:h-[70vh] flex flex-col border border-gray-700 md:rounded-xl">
       <div className="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800">
         <h3 className="text-white font-bold text-lg">Court Records</h3>
@@ -1112,7 +1112,7 @@ export default function RoyalMenagerie() {
             size={80}
             className="text-purple-500 mx-auto mb-4 animate-bounce drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]"
           />
-          <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-purple-400 to-pink-600 font-serif tracking-widest drop-shadow-md">
+          <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-linear-to-b from-purple-400 to-pink-600 font-serif tracking-widest drop-shadow-md">
             ROYAL MENAGERIE
           </h1>
           <p className="text-white-400/60 tracking-[0.3em] uppercase mt-2">
@@ -1136,7 +1136,7 @@ export default function RoyalMenagerie() {
           <button
             onClick={createRoom}
             disabled={loading}
-            className="w-full bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 hover:to-purple-500 p-4 rounded font-bold mb-4 flex items-center justify-center gap-2 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all"
+            className="w-full bg-linear-to-r from-purple-700 to-purple-600 hover:from-purple-600 hover:to-purple-500 p-4 rounded font-bold mb-4 flex items-center justify-center gap-2 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all"
           >
             <Crown size={20} /> Establish Court
           </button>
@@ -1324,7 +1324,7 @@ export default function RoyalMenagerie() {
         )}
 
         {/* Top Bar */}
-        <div className="h-14 bg-gray-900/80 border-b border-gray-800 flex items-center justify-between px-4 z-[160] backdrop-blur-md sticky top-0">
+        <div className="h-14 bg-gray-900/80 border-b border-gray-800 flex items-center justify-between px-4 z-160 backdrop-blur-md sticky top-0">
           <span className="font-serif text-purple-500 font-bold tracking-wider">
             ROYAL MENAGERIE
           </span>
@@ -1356,7 +1356,7 @@ export default function RoyalMenagerie() {
 
         {/* GAME OVER SCREEN */}
         {gameState.status === "finished" && (
-          <div className="fixed inset-0 top-14 bg-black/95 z-[150] flex flex-col items-center justify-center p-4 text-center animate-in fade-in">
+          <div className="fixed inset-0 top-14 bg-black/95 z-150 flex flex-col items-center justify-center p-4 text-center animate-in fade-in">
             <Skull size={64} className="text-red-500 mb-6 animate-bounce" />
             <h1 className="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-widest">
               Game Over
@@ -1481,7 +1481,7 @@ export default function RoyalMenagerie() {
                   </div>
 
                   {/* Face Up Cards */}
-                  <div className="flex flex-wrap justify-center gap-1 min-h-[2rem]">
+                  <div className="flex flex-wrap justify-center gap-1 min-h-8">
                     {p.faceUpCards.sort().map((c, idx) => (
                       <CardDisplay key={idx} type={c} tiny />
                     ))}
@@ -1529,7 +1529,7 @@ export default function RoyalMenagerie() {
 
           {/* MODAL: SNEAK PEEK (Centered & Isolated) */}
           {showPeekModal && (
-            <div className="fixed inset-0 bg-black/95 z-[200] flex items-center justify-center p-4 animate-in zoom-in">
+            <div className="fixed inset-0 bg-black/95 z-200 flex items-center justify-center p-4 animate-in zoom-in">
               <div className="bg-gray-800 w-full max-w-sm p-6 rounded-2xl border border-gray-600 flex flex-col items-center shadow-2xl relative">
                 <h3 className="text-2xl font-bold text-white mb-4">
                   Sneak Peek
