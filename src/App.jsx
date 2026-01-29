@@ -47,6 +47,7 @@ import {
   PawPrint, // Used for Dog
   Skull,
   Trash2, // Added Trash2 icon
+  Copy,
 } from "lucide-react";
 
 // --- Firebase Config & Init ---
@@ -56,7 +57,7 @@ const firebaseConfig = {
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -558,8 +559,8 @@ const LogViewer = ({ logs, onClose }) => (
               log.type === "danger"
                 ? "bg-red-900/20 border-red-500 text-red-200"
                 : log.type === "success"
-                ? "bg-green-900/20 border-green-500 text-green-200"
-                : "bg-gray-700/50 border-gray-500 text-gray-300"
+                  ? "bg-green-900/20 border-green-500 text-green-200"
+                  : "bg-gray-700/50 border-gray-500 text-gray-300"
             }`}
           >
             {log.text}
@@ -574,10 +575,10 @@ const LogViewer = ({ logs, onClose }) => (
 export default function RoyalMenagerie() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState("menu");
-  
+
   // Initialize roomId from localStorage if available
   const [roomId, setRoomId] = useState(
-    () => localStorage.getItem("royal_menagerie_roomId") || ""
+    () => localStorage.getItem("royal_menagerie_roomId") || "",
   );
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [gameState, setGameState] = useState(null);
@@ -603,7 +604,7 @@ export default function RoyalMenagerie() {
 
   //read and fill global name
   const [playerName, setPlayerName] = useState(
-    () => localStorage.getItem("gameHub_playerName") || ""
+    () => localStorage.getItem("gameHub_playerName") || "",
   );
   //set global name for all game
   useEffect(() => {
@@ -621,8 +622,6 @@ export default function RoyalMenagerie() {
     initAuth();
     onAuthStateChanged(auth, setUser);
   }, []);
-
-  
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "game_hub_settings", "config"), (doc) => {
@@ -658,7 +657,7 @@ export default function RoyalMenagerie() {
           setView("menu");
           setError("The court has been dissolved.");
         }
-      }
+      },
     );
     return () => unsub();
   }, [roomId, user]);
@@ -693,7 +692,7 @@ export default function RoyalMenagerie() {
     };
     await setDoc(
       doc(db, "artifacts", APP_ID, "public", "data", "rooms", newId),
-      initialData
+      initialData,
     );
 
     // Save to local storage so refresh doesn't kill session
@@ -715,7 +714,7 @@ export default function RoyalMenagerie() {
       "public",
       "data",
       "rooms",
-      roomCodeInput
+      roomCodeInput,
     );
     const snap = await getDoc(ref);
     if (!snap.exists()) {
@@ -774,7 +773,7 @@ export default function RoyalMenagerie() {
       "public",
       "data",
       "rooms",
-      roomId
+      roomId,
     );
     const snap = await getDoc(roomRef);
     if (snap.exists()) {
@@ -803,18 +802,33 @@ export default function RoyalMenagerie() {
     const players = gameState.players.filter((p) => p.id !== pid);
     await updateDoc(
       doc(db, "artifacts", APP_ID, "public", "data", "rooms", roomId),
-      { players }
+      { players },
     );
+  };
+
+  const copyToClipboard = () => {
+    try {
+      navigator.clipboard.writeText(roomId);
+      triggerFeedback("neutral", "COPIED!", "", CheckCircle);
+    } catch (e) {
+      const el = document.createElement("textarea");
+      el.value = roomId;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      triggerFeedback("neutral", "COPIED!", "", CheckCircle);
+    }
   };
 
   const toggleReady = async () => {
     if (!gameState || !user) return;
     const updatedPlayers = gameState.players.map((p) =>
-      p.id === user.uid ? { ...p, ready: !p.ready } : p
+      p.id === user.uid ? { ...p, ready: !p.ready } : p,
     );
     await updateDoc(
       doc(db, "artifacts", APP_ID, "public", "data", "rooms", roomId),
-      { players: updatedPlayers }
+      { players: updatedPlayers },
     );
   };
 
@@ -835,7 +849,7 @@ export default function RoyalMenagerie() {
         turnState: null,
         logs: [],
         winnerId: null,
-      }
+      },
     );
     setShowLeaveConfirm(false);
   };
@@ -894,7 +908,7 @@ export default function RoyalMenagerie() {
             type: "neutral",
           },
         ],
-      }
+      },
     );
   };
 
@@ -930,7 +944,7 @@ export default function RoyalMenagerie() {
           text: `${myPlayer.name} passed a card to ${targetName} claiming it is a ${ANIMALS[declaredAnimal].name}.`,
           type: "neutral",
         }),
-      }
+      },
     );
 
     setSelectedCard(null);
@@ -973,14 +987,14 @@ export default function RoyalMenagerie() {
         "success",
         "CORRECT!",
         `${loserName} takes the card`,
-        CheckCircle
+        CheckCircle,
       );
     else if (user.uid === loserId)
       triggerFeedback(
         "failure",
         "WRONG!",
         `You take the ${ANIMALS[actual].name}`,
-        X
+        X,
       );
     else triggerFeedback("neutral", "RESULT", logText, Info);
 
@@ -1024,7 +1038,7 @@ export default function RoyalMenagerie() {
 
     await updateDoc(
       doc(db, "artifacts", APP_ID, "public", "data", "rooms", roomId),
-      updates
+      updates,
     );
   };
 
@@ -1054,7 +1068,7 @@ export default function RoyalMenagerie() {
           text: `${userName} looked and passed the card.`,
           type: "neutral",
         }),
-      }
+      },
     );
 
     setForwardingPhase(false);
@@ -1064,7 +1078,7 @@ export default function RoyalMenagerie() {
 
   const getValidTargets = (trace = []) => {
     return gameState.players.filter(
-      (p) => p.id !== user.uid && !trace.includes(p.id) && !p.eliminated
+      (p) => p.id !== user.uid && !trace.includes(p.id) && !p.eliminated,
     );
   };
 
@@ -1201,9 +1215,20 @@ export default function RoyalMenagerie() {
         )}
         <div className="z-10 w-full max-w-lg bg-gray-900/90 backdrop-blur p-8 rounded-2xl border border-purple-900/50 shadow-2xl mb-4">
           <div className="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
-            <h2 className="text-2xl font-serif text-purple-400">
-              Court Room: <span className="text-white font-mono">{roomId}</span>
-            </h2>
+            {/* Grouping Title and Copy Button together on the left */}
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-serif text-purple-400">
+                Court Room:{" "}
+                <span className="text-white font-mono">{roomId}</span>
+              </h2>
+              <button
+                onClick={copyToClipboard}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white"
+                title="Copy Room ID"
+              >
+                <Copy size={16} />
+              </button>
+            </div>
             <button
               onClick={() => setShowLeaveConfirm(true)}
               className="p-2 bg-red-900/30 hover:bg-red-900/50 rounded text-red-300"
@@ -1438,12 +1463,13 @@ export default function RoyalMenagerie() {
               if (p.id === user.uid) return null;
               const isActive = gameState.turnState
                 ? gameState.turnState.holderId === p.id
-                : (gameState.players[gameState.turnIndex] && gameState.turnIndex === i); 
-                // ^^^ Added check to ensure turnIndex points to a valid player
+                : gameState.players[gameState.turnIndex] &&
+                  gameState.turnIndex === i;
+              // ^^^ Added check to ensure turnIndex points to a valid player
               const isTargetable =
                 (isMyTurn && selectedCard) || forwardingPhase;
               const validTargets = getValidTargets(
-                forwardingPhase ? gameState.turnState.passedTrace : []
+                forwardingPhase ? gameState.turnState.passedTrace : [],
               );
               const canSelect =
                 isTargetable && validTargets.some((t) => t.id === p.id);
@@ -1521,7 +1547,7 @@ export default function RoyalMenagerie() {
             ) : (
               `${
                 gameState.players.find(
-                  (p) => p.id === gameState.turnState.holderId
+                  (p) => p.id === gameState.turnState.holderId,
                 )?.name || "Opponent"
               } is deciding...`
             )}
@@ -1573,7 +1599,7 @@ export default function RoyalMenagerie() {
                         <div className="bg-gray-700 p-2 rounded font-bold">
                           {
                             gameState.players.find(
-                              (p) => p.id === targetPlayerId
+                              (p) => p.id === targetPlayerId,
                             )?.name
                           }
                         </div>
@@ -1659,7 +1685,7 @@ export default function RoyalMenagerie() {
                         <div className="bg-gray-700 p-2 rounded font-bold">
                           {
                             gameState.players.find(
-                              (p) => p.id === targetPlayerId
+                              (p) => p.id === targetPlayerId,
                             )?.name
                           }
                         </div>
@@ -1722,7 +1748,7 @@ export default function RoyalMenagerie() {
               <div className="w-full max-w-lg bg-gray-900 rounded-2xl border-2 border-yellow-500/50 shadow-2xl p-6 animate-in zoom-in pointer-events-auto">
                 <h3 className="text-xl md:text-2xl font-black text-center text-white mb-2">
                   {gameState.players.find(
-                    (p) => p.id === gameState.turnState.originId
+                    (p) => p.id === gameState.turnState.originId,
                   )?.name || "Opponent"}{" "}
                   offers a card...
                 </h3>
